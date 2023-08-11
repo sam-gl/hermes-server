@@ -1,0 +1,23 @@
+{
+  "name": "hermes-server",
+  "version": "1.0.0",
+  "description": "Backend server that receives email subs, saves them in a db and adds them to third-party email providers.",
+  "main": "dist/app.bundle.js",
+  "type": "module",
+  "scripts": {
+    "build": "rollup -c"
+  },
+  "author": "Sam",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "^15.1.0",
+    "@rollup/plugin-typescript": "^11.1.2",
+    "rollup": "^3.28.0",
+    "rollup-plugin-peer-deps-external": "^2.2.4",
+    "tslib": "^2.6.1",
+    "typescript": "^5.1.6"
+  }
+}
