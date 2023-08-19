@@ -1,3 +1,4 @@
+import 'dotenv/config'
 import express, { Express, Request, Response } from 'express';
 import rateLimit, { RateLimitRequestHandler } from 'express-rate-limit';
 import helmet from 'helmet';

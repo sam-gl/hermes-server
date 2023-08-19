@@ -1,6 +1,9 @@
 import { Express, Request, Response } from 'express';
+import { ValidationError } from 'runtypes';
 
+import Subscriber from '../models/Subscriber.ts';
 import { validateSubscribeBody } from './validators/subscribe.ts';
+import { addEmail, sendVerificationEmail } from '../providers/mailjet.ts';
 
 export default (app: Express) => {
   const endpointPrefix = "/subscribe";
@@ -9,43 +12,56 @@ export default (app: Express) => {
 
 
   // Create a new subscription
-  app.post(`${endpointPrefix}`, (req: Request, res: Response) => {
+  app.post(`${endpointPrefix}`, async (req: Request, res: Response) => {
     try {
       const subscribeBody = validateSubscribeBody(req.body);
       console.log("SB", subscribeBody);
 
-      // Make request(s) to email provider
+      // Add subscriber to email provider
+      const addEmailResponse = await addEmail(req.body.email);
+      console.log(addEmailResponse);
+      
+      // Save email in local db and generate verification link
+      // db.save(email)
+      const newSubscriber = await Subscriber.create({
+        
+      })
 
-
-      // Save email in local db
+      // Send verification email
+      const verificationResponse = await sendVerificationEmail(req.body.email, verificationCode);
 
       // Send response
-      res.status(201).send();
+      res.status(201).send(addEmailResponse);
     } catch(e) {
       console.error(e);
+
+      if(e instanceof ValidationError) {
+        res.status(400).send();
+      }
+
       res.status(500).send();
     }
   });
-  
-  // Start unsubscription, needs verification
-  app.delete(`${endpointPrefix}`, (req: Request, res: Response) => {
-    // Check email exists in db
-    
-    // Send verification email containing link to unsubscribe
 
-    // Send response
-    res.status(200).send();
-  });
-
-  // Verify unsubscription (from link in their inbox, so must be a GET)
+  // Verify subscription from link in their inbox
   app.get(`${endpointPrefix}/verify`, (req: Request, res: Response) => {
     const verificationCode = req.query.code;
 
     // Lookup email and check verification code is correct
 
-    // Make request to email provider to remove email
+    // Make request to email provider to verify email
 
-    // Remove email from local db
+    // Update local db
+
+    // Send response
+    res.status(200).send();
+  });
+
+  // Start unsubscription, needs verification
+  app.delete(`${endpointPrefix}`, (req: Request, res: Response) => {
+    // Check email exists in db
+    
+    // Send verification email containing link to unsubscribe
 
     // Send response
     res.status(200).send();
