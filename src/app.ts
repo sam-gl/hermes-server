@@ -2,11 +2,12 @@ import 'dotenv/config'
 import express, { Express, Request, Response } from 'express';
 import rateLimit, { RateLimitRequestHandler } from 'express-rate-limit';
 import helmet from 'helmet';
+import { Sequelize } from 'sequelize';
+
+import subscribeEndpoints from './endpoints/subscribe.ts';
 
 const app: Express = express();
 const port: number = parseInt(process.env.HTTP_PORT as string) || 3000;
-
-import subscribeEndpoints from './endpoints/subscribe.ts';
 
 const limiter: RateLimitRequestHandler = rateLimit({
 	windowMs: 5 * 60 * 1000, // 5 minutes

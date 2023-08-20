@@ -7,9 +7,7 @@ import { addEmail, sendVerificationEmail } from '../providers/mailjet.ts';
 
 export default (app: Express) => {
   const endpointPrefix = "/subscribe";
-
   // All endpoints here: more heavily rate limited
-
 
   // Create a new subscription
   app.post(`${endpointPrefix}`, async (req: Request, res: Response) => {
@@ -19,19 +17,25 @@ export default (app: Express) => {
 
       // Add subscriber to email provider
       const addEmailResponse = await addEmail(req.body.email);
-      console.log(addEmailResponse);
+      console.log("addEmailResponse:", addEmailResponse);
+
+      if (addEmailResponse.Count !== 1) {
+        console.error(`Error adding email to provider: ${req.body.email}`);
+        res.status(500).send();
+      }
       
       // Save email in local db and generate verification link
-      // db.save(email)
       const newSubscriber = await Subscriber.create({
-        
-      })
+        email: req.body.email
+      });
+      console.log("newSubscriber: ", newSubscriber);
 
       // Send verification email
-      const verificationResponse = await sendVerificationEmail(req.body.email, verificationCode);
+      const verificationResponse = await sendVerificationEmail(req.body.email, newSubscriber.dataValues.verificationCode);
+      console.log("verificationResponse: ", verificationResponse);
 
       // Send response
-      res.status(201).send(addEmailResponse);
+      res.status(201).send(/*addEmailResponse*/);
     } catch(e) {
       console.error(e);
 

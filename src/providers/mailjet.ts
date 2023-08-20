@@ -4,7 +4,7 @@ const { MAIL_PROVIDER_API_KEY, MAIL_PROVIDER_API_SECRET, MAIL_PROVIDER_API_URL }
 const creds = Buffer.from(`${MAIL_PROVIDER_API_KEY}:${MAIL_PROVIDER_API_SECRET}`, 'utf8').toString('base64');
 
 const addEmail = async (email: string) => {
-  const url = `${MAIL_PROVIDER_API_URL}/contact`;
+  const url = `${MAIL_PROVIDER_API_URL}/REST/contact`;
   try {
     const response = await fetch(url, {
       method: 'POST',
@@ -36,22 +36,12 @@ const sendVerificationEmail = async(email: string, verificationCode: string) => 
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        "Messages":[
-          {
-              "From": {
-                  "Email": "",
-                  "Name": "Sam"
-              },
-              "To": [
-                  {
-                      "Email": email
-                  }
-              ],
-              "Subject": "Verify your newsletter subscription",
-              "TextPart": "Hello and welcome to the newsletter, thank you for joining us! Verify your subscription here: ",
-              "HTMLPart": "Hello and welcome to the newsletter, thank you for joining us! Verify your subscription here: <a>link</a>"
-          }
-        ]
+        "FromEmail": "",
+        "FromName": "Sam",
+        "Subject": "Verify your newsletter subscription",
+        "Text-part": `Hello and welcome to the newsletter, thank you for joining us! Verify your subscription here: ${process.env.HERMES_URL}/verify?code=${verificationCode}`,
+        "Html-part": `Hello and welcome to the newsletter, thank you for joining us! Verify your subscription <a href="${process.env.HERMES_URL}/verify?code=${verificationCode}" target="_blank">here</a>. <br><br>If the link above doesn't work, copy and paste this in a new tab: ${process.env.HERMES_URL}/verify?code=${verificationCode}`,
+        "Recipients":[{ "Email": email }]
       })
     });
 
@@ -60,7 +50,5 @@ const sendVerificationEmail = async(email: string, verificationCode: string) => 
     console.error(`Error making request to ${url}`, e);
   }
 };
-
-
 
 export { addEmail, sendVerificationEmail };

@@ -2,12 +2,10 @@ import { Sequelize, DataTypes } from 'sequelize';
 
 const sequelize = new Sequelize('sqlite::memory:');
 const Subscription = sequelize.define('Subscription', {
-  subscription_id: DataTypes.UUIDV4,
-  subscriber_id: DataTypes.UUIDV4,
-  mailing_list_id: DataTypes.UUIDV4,
-  active: DataTypes.BOOLEAN,
-  created_at: DataTypes.DATE,
-  updated_at: DataTypes.DATE
+  subscriptionID: DataTypes.UUIDV4,
+  subscriberID: DataTypes.UUIDV4,
+  mailingListID: DataTypes.UUIDV4,
+  active: DataTypes.BOOLEAN
 });
 
 export default Subscription;

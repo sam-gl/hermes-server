@@ -1,11 +1,15 @@
 import { Sequelize, DataTypes } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 import { randomBytes } from 'node:crypto';
+import { resolve } from 'node:path';
 
+const sequelize = new Sequelize({
+  dialect: 'sqlite',
+  storage: resolve(process.env.DB_FILE as string)
+});
 
-const sequelize = new Sequelize('sqlite::memory:');
 const Subscriber = sequelize.define('Subscriber', {
-  subscriber_id: {
+  subscriberID: {
     type: DataTypes.UUIDV4,
     defaultValue: uuidv4(),
     unique: true,
@@ -16,7 +20,7 @@ const Subscriber = sequelize.define('Subscriber', {
     allowNull: false,
     unique: true
   },
-  verification_code: {
+  verificationCode: {
     type: DataTypes.STRING,
     defaultValue: randomBytes(32).toString('hex'), // async this
     unique: true
@@ -25,12 +29,9 @@ const Subscriber = sequelize.define('Subscriber', {
     type: DataTypes.BOOLEAN,
     defaultValue: false
   },
-  created_at: {
-    type: DataTypes.DATE,
-    defaultValue: new Date(Date.now()),
-    
-  },
-  verified_at: DataTypes.DATE
+  verifiedAt: DataTypes.DATE
 });
+
+Subscriber.sync();
 
 export default Subscriber;
