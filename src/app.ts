@@ -1,9 +1,12 @@
 import 'dotenv/config'
+import { join } from 'node:path';
 import express, { Express, Request, Response } from 'express';
 import rateLimit, { RateLimitRequestHandler } from 'express-rate-limit';
 import helmet from 'helmet';
-import { Sequelize } from 'sequelize';
+import { engine } from 'express-handlebars';
+import { initDatabase } from './models/index.ts';
 
+import accountManagementPages from './pages/pageRoutes.ts';
 import subscribeEndpoints from './endpoints/subscribe.ts';
 
 const app: Express = express();
@@ -20,16 +23,27 @@ app.use(limiter);
 app.use(express.json());
 
 app.get('/', (req: Request, res: Response) => {
-  res.json({ status: "online" });
+	res.json({ status: "online" });
 });
 
-// [linked to mail provider]
-	// subscribe
-	// unsubscribe
+// Static subscription management pages.
+app.engine('.hbs', engine({extname: '.hbs'}));
+app.set('view engine', '.hbs');
+app.set('views', join(__dirname, 'pages'));
+accountManagementPages(app);
+
+// API (un)subscription endpoints
 subscribeEndpoints(app);
 
-// [internal only]
-	// create mail provider
+// // Initialise database by syncing models
+// const sequelize = new Sequelize({
+//   dialect: 'sqlite',
+//   storage: resolve(process.env.DB_FILE as string)
+// });
+// sequelize.sync();
+(async () => {
+  const i = await initDatabase();
+})()
 
 app.listen(port, () => {
   console.log(`[HERMES] HTTP server started on port ${port}`);

@@ -1,9 +1,12 @@
 import { Express, Request, Response } from 'express';
 import { ValidationError } from 'runtypes';
 
-import Subscriber from '../models/Subscriber.ts';
 import { validateSubscribeBody } from './validators/subscribe.ts';
-import { addEmail, sendVerificationEmail } from '../providers/mailjet.ts';
+import { addEmail, sendVerificationEmail, subscribe, verifyEmail } from '../providers/mailjet.ts';
+
+import { Subscriber, Subscription } from '../models/index.ts';
+
+const { MAILING_LIST_ID } = process.env;
 
 export default (app: Express) => {
   const endpointPrefix = "/subscribe";
@@ -19,8 +22,11 @@ export default (app: Express) => {
       const addEmailResponse = await addEmail(req.body.email);
       console.log("addEmailResponse:", addEmailResponse);
 
-      if (addEmailResponse.Count !== 1) {
+      if (addEmailResponse.Count !== 1) { // check status code here
+        // check if user has already subscribed
+        // otherwise: 
         console.error(`Error adding email to provider: ${req.body.email}`);
+        console.error(`Response from email provider: `, addEmailResponse);
         res.status(500).send();
       }
       
@@ -48,17 +54,57 @@ export default (app: Express) => {
   });
 
   // Verify subscription from link in their inbox
-  app.get(`${endpointPrefix}/verify`, (req: Request, res: Response) => {
-    const verificationCode = req.query.code;
+  app.get(`${endpointPrefix}/verify`, async (req: Request, res: Response) => {
+    try {
+      const verificationCode = req.query.code;
 
-    // Lookup email and check verification code is correct
+      // Lookup email and check verification code is correct
+      const subscriber = await Subscriber.findOne({
+        where: { verificationCode }
+      });
 
-    // Make request to email provider to verify email
+      if(!subscriber) {
+        // No subscriber found with that verification code
+        res.status(404).send();
+      }
 
-    // Update local db
+      console.log(subscriber);
 
-    // Send response
-    res.status(200).send();
+      // Make request to email provider to verify email
+      const verifyEmailResponse = await verifyEmail(subscriber?.dataValues.email);
+      console.log("Verify Email Response: ", verifyEmailResponse);
+
+      // Subscribe email to the specified mailing list
+      const subscribeEmailResponse = await subscribe(
+        MAILING_LIST_ID as string,
+        subscriber?.dataValues.email
+      );
+      console.log("subscribeEmailResponse: ", subscribeEmailResponse);
+
+      // Update local db
+      const updatedSubscriber = await Subscriber.update(
+        {
+          verified: true,
+          verifiedAt: new Date(Date.now())
+        },
+        {
+          where: { subscriberID: subscriber?.dataValues.subscriberID }
+        }
+      );
+
+      const subscription = await Subscription.create({
+        subscriberID: subscriber?.dataValues.subscriberID,
+        mailingListID: MAILING_LIST_ID,
+        active: true
+      });
+      console.log("subscription: ", subscription);
+
+      // Send response
+      res.status(200).send("Done");
+    } catch(e) {
+      console.error("Some other error: ", e);
+      res.status(500).send();
+    }
   });
 
   // Start unsubscription, needs verification

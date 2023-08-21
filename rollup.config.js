@@ -4,6 +4,7 @@ import resolve from '@rollup/plugin-node-resolve';
 import typescript from '@rollup/plugin-typescript';
 import external from 'rollup-plugin-peer-deps-external';
 import sourcemaps from 'rollup-plugin-sourcemaps';
+import copy from 'rollup-plugin-copy';
 
 import pkg from "./package.json" assert { type: "json" };
 
@@ -20,7 +21,12 @@ export default {
     external(),
     resolve(),
     typescript({ tsconfig: './tsconfig.json' }),
-    sourcemaps()
+    sourcemaps(),
+    copy({
+      targets: [
+        { src: 'src/pages', dest: 'dist' }
+      ]
+    })
   ],
   external: [ /node_modules/ ]
 };

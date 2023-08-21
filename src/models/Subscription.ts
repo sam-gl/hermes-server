@@ -1,21 +1,28 @@
 import { Sequelize, DataTypes } from 'sequelize';
+import { v4 as uuidv4 } from 'uuid';
 
-const sequelize = new Sequelize('sqlite::memory:');
-const Subscription = sequelize.define('Subscription', {
-  subscriptionID: DataTypes.UUIDV4,
-  subscriberID: DataTypes.UUIDV4,
-  mailingListID: DataTypes.UUIDV4,
-  active: DataTypes.BOOLEAN
-});
+const subscriptionModel = (sequelize: Sequelize) => {
+  const Subscription = sequelize.define('Subscription', {
+    subscriptionID: {
+      type: DataTypes.UUIDV4,
+      defaultValue: uuidv4(),
+      unique: true,
+      primaryKey: true
+    },
+    subscriberID: DataTypes.UUIDV4,
+    mailingListID: {
+      // The ID of the mailing list/contact list generated remotely by the email provider.
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    active: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
+    }
+  });
 
-export default Subscription;
+  return Subscription;
+}
 
 
-
-
-/*
-  person subscribes to ->
-  subscription which is linked to a ->
-  mailing list which defines a name, description, mail provider, last message sent ts, last person added ts and is linked to a ->
-  provider which defines a name, and details of how to use the provider's api
-*/
+export default subscriptionModel;
