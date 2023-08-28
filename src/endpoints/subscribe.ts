@@ -2,7 +2,7 @@ import { Express, Request, Response } from 'express';
 import { ValidationError } from 'runtypes';
 
 import { validateSubscribeBody } from './validators/subscribe.ts';
-import { addEmail, sendVerificationEmail, subscribe, verifyEmail } from '../providers/mailjet.ts';
+import { addEmail, sendVerificationEmail, subscribe, verifyEmail, unsubscribe, removeUser } from '../providers/mailjet.ts';
 
 import { Subscriber, Subscription } from '../models/index.ts';
 
@@ -22,7 +22,7 @@ export default (app: Express) => {
       const addEmailResponse = await addEmail(req.body.email);
       console.log("addEmailResponse:", addEmailResponse);
 
-      if (addEmailResponse.Count !== 1) { // check status code here
+      if (addEmailResponse.Count !== 1) { // TODO: check status code here
         // check if user has already subscribed
         // otherwise: 
         console.error(`Error adding email to provider: ${req.body.email}`);
@@ -41,7 +41,7 @@ export default (app: Express) => {
       console.log("verificationResponse: ", verificationResponse);
 
       // Send response
-      res.status(201).send(/*addEmailResponse*/);
+      res.status(201).send();
     } catch(e) {
       console.error(e);
 
@@ -107,13 +107,72 @@ export default (app: Express) => {
     }
   });
 
-  // Start unsubscription, needs verification
-  app.delete(`${endpointPrefix}`, (req: Request, res: Response) => {
-    // Check email exists in db
-    
-    // Send verification email containing link to unsubscribe
+  // Unsub from the subscription passed in and if there are no more 
+  // subscriptions after this unsub, then also delete the 
+  // user/contact from the provider completely.
+  app.delete(`${endpointPrefix}`, async (req: Request, res: Response) => {
+    try {
+      const subscriptionID = req.query.subscriptionID as string;
 
-    // Send response
-    res.status(200).send();
+      if(!subscriptionID) {
+        res.status(500).send();
+        return;
+      }
+
+      // Check subscription and email exists in db
+      const subscription = await Subscription.findByPk(subscriptionID);
+      const subscriber = await Subscriber.findByPk(subscription?.dataValues.subscriberID);
+      console.log("Subscription: ", subscription);
+      console.log("Subscriber: ", subscriber);
+
+      if(!subscription || !subscriber) {
+        res.status(500).send();
+        return;
+      }
+
+      // Make request to email provider to unsubscribe user
+      const unsubscribeResponse = await unsubscribe(
+        subscription?.dataValues.mailingListID,
+        subscriber?.dataValues.email
+      );
+      console.log("unsubscribeResponse: ", unsubscribeResponse);
+
+      // Remove row relating to subscription from db
+      const removedSubscription = await Subscription.destroy({
+        where: {
+          subscriptionID
+        }
+      });
+      console.log("removedSubscription: ", removedSubscription);
+
+      // Check if user has any other subscriptions
+      const remainingSubscriptionCount = await Subscription.count({
+        where: {
+          subscriberID: subscription?.dataValues.subscriberID
+        }
+      });
+      console.log("remainingSubscriptionCount: ", remainingSubscriptionCount);
+      
+      // No remaining subscriptions after unsubbing - remove the subscriber completely
+      if(remainingSubscriptionCount === 0) {
+        console.log("No more subs! Removing user completely...");
+
+        const deletedSubscriberResponse = await removeUser(subscriber?.dataValues.email)
+        console.log("deletedSubscriberResponse: ", deletedSubscriberResponse);
+
+        const deletedSubscriber = await Subscriber.destroy({
+          where: {
+            subscriberID: subscriber?.dataValues.subscriberID
+          }
+        });
+        console.log("deletedSubscriber: ", deletedSubscriber);
+      }
+
+      // Send response
+      res.status(200).send();
+    } catch(e) {
+      console.error("Some other error: ", e);
+      res.status(500).send();
+    }
   });
 }

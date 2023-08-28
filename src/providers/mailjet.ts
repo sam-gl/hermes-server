@@ -1,7 +1,9 @@
 import { Buffer } from 'node:buffer';
 
-const { MAIL_PROVIDER_API_KEY, MAIL_PROVIDER_API_SECRET, MAIL_PROVIDER_API_URL, MAIL_PROVIDER_FROM_ADDRESS, MAIL_PROVIDER_FROM_NAME } = process.env;
+const { MAIL_PROVIDER_API_KEY, MAIL_PROVIDER_API_SECRET, MAIL_PROVIDER_FROM_ADDRESS, MAIL_PROVIDER_FROM_NAME } = process.env;
 const creds = Buffer.from(`${MAIL_PROVIDER_API_KEY}:${MAIL_PROVIDER_API_SECRET}`, 'utf8').toString('base64');
+
+const MAIL_PROVIDER_API_URL = "https://api.mailjet.com/v3";
 
 const addEmail = async (email: string) => {
   const url = `${MAIL_PROVIDER_API_URL}/REST/contact`;
@@ -72,8 +74,18 @@ const verifyEmail = async (email: string) => {
   }
 };
 
-const subscribe = async (mailingListID: string, email: string) => {
+enum ManageSubscriptionAction {
+  Subscribe = "addforce",
+  Unsubscribe = "remove"
+}
+
+const manageSubscription = async (
+  action: ManageSubscriptionAction,
+  mailingListID: string,
+  email: string
+) => {
   const url = `${MAIL_PROVIDER_API_URL}/REST/contact/${encodeURIComponent(email)}/managecontactslists`;
+
   try {
     const response = await fetch(url, {
       method: 'POST',
@@ -85,7 +97,7 @@ const subscribe = async (mailingListID: string, email: string) => {
       body: JSON.stringify({
         "ContactsLists":[
           {
-            "Action": "addforce",
+            "Action": action,
             "ListID": mailingListID
           }
         ]
@@ -98,4 +110,71 @@ const subscribe = async (mailingListID: string, email: string) => {
   }
 };
 
-export { addEmail, sendVerificationEmail, verifyEmail, subscribe };
+const subscribe = async (mailingListID: string, email: string) => {
+  return manageSubscription(
+    ManageSubscriptionAction.Subscribe,
+    mailingListID,
+    email
+  );
+}
+
+const unsubscribe = async (mailingListID: string, email: string) => {
+  return manageSubscription(
+    ManageSubscriptionAction.Unsubscribe,
+    mailingListID,
+    email
+  );
+}
+
+const getUser = async (email: string) => {
+  try {
+    const response = await fetch(`${MAIL_PROVIDER_API_URL}/REST/contact/${encodeURIComponent(email)}`, {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+        "Authorization": `Basic ${creds}`,
+        "Content-Type": "application/json"
+      }
+    });
+
+    return response.json();
+  } catch(e) {
+    console.error(`Error making request to ${MAIL_PROVIDER_API_URL}`, e);
+  }
+}
+
+const removeUser = async (email: string) => {
+  // For some reason, the deletion API for Mailjet is under /v4 rather
+  // than /v3 - which everything else is under.
+  const user = await getUser(email);
+  console.log("user:", user)
+  if(!user || user.Count !== 1) throw new Error(`Couldn't get user for ${email}:`, user);
+
+  const MAIL_PROVIDER_DELETION_API_URL = `https://api.mailjet.com/v4/contacts/${user.Data[0].ID}`;
+  console.log("MAIL_PROVIDER_DELETION_API_URL", MAIL_PROVIDER_DELETION_API_URL);
+  try {
+    const response = await fetch(MAIL_PROVIDER_DELETION_API_URL, {
+      method: 'DELETE',
+      credentials: 'include',
+      headers: {
+        "Authorization": `Basic ${creds}`,
+        "Content-Type": "application/json"
+      }
+    });
+
+    console.log("Response", response);
+
+    return response.status === 200;
+  } catch(e) {
+    console.error(`Error making request to ${MAIL_PROVIDER_DELETION_API_URL}`, e);
+  }
+}
+
+export {
+  addEmail,
+  sendVerificationEmail,
+  verifyEmail,
+  subscribe,
+  unsubscribe,
+  removeUser
+};
