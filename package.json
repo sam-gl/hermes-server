@@ -22,7 +22,8 @@
     "runtypes": "^6.7.0",
     "sequelize": "^6.32.1",
     "sqlite3": "^5.1.6",
-    "uuid": "^9.0.0"
+    "uuid": "^9.0.0",
+    "winston": "^3.10.0"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^25.0.3",

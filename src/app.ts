@@ -2,8 +2,9 @@ import 'dotenv/config'
 import { join } from 'node:path';
 import express, { Express, Request, Response } from 'express';
 import rateLimit, { RateLimitRequestHandler } from 'express-rate-limit';
-import helmet from 'helmet';
 import { engine } from 'express-handlebars';
+import expressLogger from './logger.ts';
+import helmet from 'helmet';
 import { initDatabase } from './models/index.ts';
 
 import accountManagementPages from './pages/pageRoutes.ts';
@@ -21,6 +22,7 @@ const limiter: RateLimitRequestHandler = rateLimit({
 app.use(helmet());
 app.use(limiter);
 app.use(express.json());
+app.use(expressLogger);
 
 app.get('/', (req: Request, res: Response) => {
 	res.json({ status: "online" });
