@@ -24,23 +24,30 @@ const limiter: RateLimitRequestHandler = rateLimit({
 });
 
 app.use(helmet());
-app.use(limiter);
+// app.use(limiter);
 app.use(express.json());
 app.use(expressLogger);
 
-app.get("/", (req: Request, res: Response) => {
-  res.json({ status: "online" });
-});
-
-// Static subscription management pages.
+// Configure handlebars
 app.engine(".hbs", engine({ extname: ".hbs" }));
 app.set("view engine", ".hbs");
 app.set("views", join(__dirname, "pages"));
+
+// Static subscription management pages.
 accountManagementPages(app);
 
 // API (un)subscription endpoints
 subscribeEndpoints(app);
 
+// Health endpoint
+app.get("/", (req: Request, res: Response) => {
+  res.json({ status: "online" });
+});
+
+// Static assets
+app.use("/assets", express.static("public"));
+
+// Start database
 (async () => {
   await initDatabase();
 })();
