@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { createLogger, transports, format } from "winston";
+import { createLogger, transports } from "winston";
 
 const logger = createLogger({
   level: "info",

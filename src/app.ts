@@ -44,7 +44,7 @@ subscribeEndpoints(app);
 // });
 // sequelize.sync();
 (async () => {
-  const i = await initDatabase();
+  await initDatabase();
 })();
 
 app.listen(port, () => {

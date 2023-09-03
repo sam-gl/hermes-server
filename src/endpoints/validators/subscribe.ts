@@ -1,4 +1,4 @@
-import { Literal, Record, String } from "runtypes";
+import { Record, String } from "runtypes";
 
 const SubscribeBody = Record({
   email: String

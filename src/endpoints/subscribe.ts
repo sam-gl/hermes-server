@@ -95,7 +95,7 @@ export default (app: Express) => {
       console.log("subscribeEmailResponse: ", subscribeEmailResponse);
 
       // Update local db
-      const updatedSubscriber = await Subscriber.update(
+      await Subscriber.update(
         {
           verified: true,
           verifiedAt: new Date(Date.now())
