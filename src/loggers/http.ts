@@ -9,9 +9,7 @@ const httpLogger = createLogger({
       format: "YYYY-MM-DD HH:mm:ss.SSS"
     }),
     align(),
-    printf(
-      (info) => `[${info.timestamp}] [HTTP] ${info.level}: ${info.message}`
-    )
+    printf((info) => `[${info.timestamp}] ${info.level}: ${info.message}`)
   ),
   transports: [
     new transports.Console(),
@@ -23,7 +21,12 @@ const httpLogger = createLogger({
 });
 
 const expressLogger = (req: Request, res: Response, next: NextFunction) => {
-  httpLogger.info(`${req.method} ${req.url} from ${req.ip}`);
+  res.on("finish", () => {
+    // console.log(`Responded with status ${res.statusCode}`);
+    httpLogger.info(
+      `🌐 ${req.method} ${req.url} from ${req.ip} | HTTP ${res.statusCode}`
+    );
+  });
   next();
 };
 

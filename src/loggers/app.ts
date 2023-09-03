@@ -1,5 +1,5 @@
 import { createLogger, transports, format } from "winston";
-const { combine, timestamp, printf, colorize, align } = format;
+const { combine, timestamp, printf, align } = format;
 
 const appLogger = createLogger({
   level: process.env.LOG_LEVEL || "info",

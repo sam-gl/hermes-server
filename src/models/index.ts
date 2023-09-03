@@ -1,6 +1,8 @@
 import { resolve } from "node:path";
 import { Sequelize } from "sequelize";
 
+import logger from "../loggers/app.ts";
+
 import subscriptionModel from "./Subscription.ts";
 import subscriberModel from "./Subscriber.ts";
 
@@ -21,7 +23,9 @@ const Subscriber = subscriberModel(sequelize);
 // });
 
 const initDatabase = async () => {
-  return sequelize.sync();
+  return sequelize.sync({
+    logging: (logLine) => logger.debug(`🛢️  ${logLine}`)
+  });
 };
 
 export { initDatabase, Subscription, Subscriber };
