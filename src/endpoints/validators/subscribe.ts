@@ -4,6 +4,7 @@ const SubscribeBody = Record({
   email: String
 });
 
-const validateSubscribeBody = (subscribeBody: object) => SubscribeBody.check(subscribeBody);
+const validateSubscribeBody = (subscribeBody: object) =>
+  SubscribeBody.check(subscribeBody);
 
 export { validateSubscribeBody };

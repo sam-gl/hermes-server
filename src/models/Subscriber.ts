@@ -1,9 +1,9 @@
-import { Sequelize, DataTypes } from 'sequelize';
-import { v4 as uuidv4 } from 'uuid';
-import { randomBytes } from 'node:crypto';
+import { Sequelize, DataTypes } from "sequelize";
+import { v4 as uuidv4 } from "uuid";
+import { randomBytes } from "node:crypto";
 
 const subscriberModel = (sequelize: Sequelize) => {
-  const Subscriber = sequelize.define('Subscriber', {
+  const Subscriber = sequelize.define("Subscriber", {
     subscriberID: {
       type: DataTypes.UUIDV4,
       defaultValue: uuidv4(),
@@ -17,7 +17,7 @@ const subscriberModel = (sequelize: Sequelize) => {
     },
     verificationCode: {
       type: DataTypes.STRING,
-      defaultValue: randomBytes(32).toString('hex'), // async this
+      defaultValue: randomBytes(32).toString("hex"), // async this
       unique: true
     },
     verified: {
@@ -28,8 +28,6 @@ const subscriberModel = (sequelize: Sequelize) => {
   });
 
   return Subscriber;
-}
-
-
+};
 
 export default subscriberModel;

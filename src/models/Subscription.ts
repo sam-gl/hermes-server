@@ -1,8 +1,8 @@
-import { Sequelize, DataTypes } from 'sequelize';
-import { v4 as uuidv4 } from 'uuid';
+import { Sequelize, DataTypes } from "sequelize";
+import { v4 as uuidv4 } from "uuid";
 
 const subscriptionModel = (sequelize: Sequelize) => {
-  const Subscription = sequelize.define('Subscription', {
+  const Subscription = sequelize.define("Subscription", {
     subscriptionID: {
       type: DataTypes.UUIDV4,
       defaultValue: uuidv4(),
@@ -22,7 +22,6 @@ const subscriptionModel = (sequelize: Sequelize) => {
   });
 
   return Subscription;
-}
-
+};
 
 export default subscriptionModel;

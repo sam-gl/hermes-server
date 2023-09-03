@@ -1,7 +1,7 @@
-import { Sequelize, DataTypes } from 'sequelize';
+import { Sequelize, DataTypes } from "sequelize";
 
-const sequelize = new Sequelize('sqlite::memory:');
-const MailingList = sequelize.define('MailingList', {
+const sequelize = new Sequelize("sqlite::memory:");
+const MailingList = sequelize.define("MailingList", {
   mailingListID: DataTypes.UUIDV4,
   name: DataTypes.STRING,
   description: DataTypes.STRING,

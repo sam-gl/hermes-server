@@ -1,11 +1,11 @@
-import { resolve } from 'node:path';
-import { Sequelize } from 'sequelize';
+import { resolve } from "node:path";
+import { Sequelize } from "sequelize";
 
-import subscriptionModel from './Subscription.ts';
-import subscriberModel from './Subscriber.ts';
+import subscriptionModel from "./Subscription.ts";
+import subscriberModel from "./Subscriber.ts";
 
 const sequelize = new Sequelize({
-  dialect: 'sqlite',
+  dialect: "sqlite",
   storage: resolve(process.env.DB_FILE as string)
 });
 
@@ -24,8 +24,4 @@ const initDatabase = async () => {
   return sequelize.sync();
 };
 
-export {
-  initDatabase,
-  Subscription,
-  Subscriber
-};
+export { initDatabase, Subscription, Subscriber };

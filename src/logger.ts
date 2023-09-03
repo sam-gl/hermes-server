@@ -1,11 +1,11 @@
-import { NextFunction, Request, Response } from 'express';
-import { createLogger, transports, format } from 'winston';
+import { NextFunction, Request, Response } from "express";
+import { createLogger, transports, format } from "winston";
 
 const logger = createLogger({
-  level: 'info',
+  level: "info",
   transports: [
     new transports.Console(),
-    new transports.File({ filename: 'logs/app.log' })
+    new transports.File({ filename: "logs/http.log" })
   ]
 });
 

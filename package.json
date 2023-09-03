@@ -9,7 +9,9 @@
     "build:watch": "rollup -cw",
     "dev": "concurrently \"npm run build:watch\" \"nodemon dist/app.bundle.cjs\"",
     "dev:debug": "concurrently \"npm run build:watch\" \"nodemon --inspect dist/app.bundle.cjs\"",
-    "start": "node dist/app.bundle.cjs"
+    "start": "node dist/app.bundle.cjs",
+    "format:check": "prettier --check .",
+    "format:write": "prettier --write ."
   },
   "author": "Sam",
   "license": "MIT",
