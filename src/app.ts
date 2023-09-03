@@ -1,10 +1,14 @@
 import "dotenv/config";
 import { join } from "node:path";
+
 import express, { Express, Request, Response } from "express";
 import rateLimit, { RateLimitRequestHandler } from "express-rate-limit";
 import { engine } from "express-handlebars";
-import expressLogger from "./logger.ts";
 import helmet from "helmet";
+
+import expressLogger from "./loggers/http.ts";
+import logger from "./loggers/app.ts";
+
 import { initDatabase } from "./models/index.ts";
 
 import accountManagementPages from "./pages/pageRoutes.ts";
@@ -37,16 +41,10 @@ accountManagementPages(app);
 // API (un)subscription endpoints
 subscribeEndpoints(app);
 
-// // Initialise database by syncing models
-// const sequelize = new Sequelize({
-//   dialect: 'sqlite',
-//   storage: resolve(process.env.DB_FILE as string)
-// });
-// sequelize.sync();
 (async () => {
   await initDatabase();
 })();
 
 app.listen(port, () => {
-  console.log(`[HERMES] HTTP server started on port ${port}`);
+  logger.info(`📬 Hermes up and running on port ${port}`);
 });

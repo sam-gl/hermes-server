@@ -1,4 +1,5 @@
 import { Buffer } from "node:buffer";
+import logger from "../loggers/app.ts";
 
 const {
   MAIL_PROVIDER_API_KEY,
@@ -6,6 +7,7 @@ const {
   MAIL_PROVIDER_FROM_ADDRESS,
   MAIL_PROVIDER_FROM_NAME
 } = process.env;
+
 const creds = Buffer.from(
   `${MAIL_PROVIDER_API_KEY}:${MAIL_PROVIDER_API_SECRET}`,
   "utf8"
@@ -31,7 +33,7 @@ const addEmail = async (email: string) => {
 
     return response.json();
   } catch (e) {
-    console.error(`Error making request to ${url}`, e);
+    logger.error(`Error making request to ${url}`, e);
   }
 };
 
@@ -60,7 +62,7 @@ const sendVerificationEmail = async (
 
     return response.json();
   } catch (e) {
-    console.error(`Error making request to ${url}`, e);
+    logger.error(`Error making request to ${url}`, e);
   }
 };
 
@@ -83,7 +85,7 @@ const verifyEmail = async (email: string) => {
 
     return response.json();
   } catch (e) {
-    console.error(`Error making request to ${url}`, e);
+    logger.error(`Error making request to ${url}`, e);
   }
 };
 
@@ -121,7 +123,7 @@ const manageSubscription = async (
 
     return response.json();
   } catch (e) {
-    console.error(`Error making request to ${url}`, e);
+    logger.error(`Error making request to ${url}`, e);
   }
 };
 
@@ -157,20 +159,20 @@ const getUser = async (email: string) => {
 
     return response.json();
   } catch (e) {
-    console.error(`Error making request to ${MAIL_PROVIDER_API_URL}`, e);
+    logger.error(`Error making request to ${MAIL_PROVIDER_API_URL}`, e);
   }
 };
 
 const removeUser = async (email: string) => {
-  // For some reason, the deletion API for Mailjet is under /v4 rather
-  // than /v3 - which everything else is under.
   const user = await getUser(email);
-  console.log("user:", user);
+  logger.info("user:", user);
   if (!user || user.Count !== 1)
     throw new Error(`Couldn't get user for ${email}:`, user);
 
+  // For some reason, the deletion API for Mailjet is under /v4 rather
+  // than /v3 - which everything else is under.
   const MAIL_PROVIDER_DELETION_API_URL = `https://api.mailjet.com/v4/contacts/${user.Data[0].ID}`;
-  console.log("MAIL_PROVIDER_DELETION_API_URL", MAIL_PROVIDER_DELETION_API_URL);
+
   try {
     const response = await fetch(MAIL_PROVIDER_DELETION_API_URL, {
       method: "DELETE",
@@ -181,11 +183,11 @@ const removeUser = async (email: string) => {
       }
     });
 
-    console.log("Response", response);
+    logger.info("Response", response);
 
     return response.status === 200;
   } catch (e) {
-    console.error(
+    logger.error(
       `Error making request to ${MAIL_PROVIDER_DELETION_API_URL}`,
       e
     );

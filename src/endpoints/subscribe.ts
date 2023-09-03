@@ -1,6 +1,8 @@
 import { Express, Request, Response } from "express";
 import { ValidationError } from "runtypes";
 
+import logger from "../loggers/app.ts";
+
 import { validateSubscribeBody } from "./validators/subscribe.ts";
 import {
   addEmail,
@@ -23,18 +25,18 @@ export default (app: Express) => {
   app.post(`${endpointPrefix}`, async (req: Request, res: Response) => {
     try {
       const subscribeBody = validateSubscribeBody(req.body);
-      console.log("SB", subscribeBody);
+      logger.info("SB", subscribeBody);
 
       // Add subscriber to email provider
       const addEmailResponse = await addEmail(req.body.email);
-      console.log("addEmailResponse:", addEmailResponse);
+      logger.info("addEmailResponse:", addEmailResponse);
 
       if (addEmailResponse.Count !== 1) {
         // TODO: check status code here
         // check if user has already subscribed
         // otherwise:
-        console.error(`Error adding email to provider: ${req.body.email}`);
-        console.error(`Response from email provider: `, addEmailResponse);
+        logger.error(`Error adding email to provider: ${req.body.email}`);
+        logger.error(`Response from email provider: `, addEmailResponse);
         res.status(500).send();
       }
 
@@ -42,19 +44,19 @@ export default (app: Express) => {
       const newSubscriber = await Subscriber.create({
         email: req.body.email
       });
-      console.log("newSubscriber: ", newSubscriber);
+      logger.info("newSubscriber: ", newSubscriber);
 
       // Send verification email
       const verificationResponse = await sendVerificationEmail(
         req.body.email,
         newSubscriber.dataValues.verificationCode
       );
-      console.log("verificationResponse: ", verificationResponse);
+      logger.info("verificationResponse: ", verificationResponse);
 
       // Send response
       res.status(201).send();
     } catch (e) {
-      console.error(e);
+      logger.error(e);
 
       if (e instanceof ValidationError) {
         res.status(400).send();
@@ -79,20 +81,20 @@ export default (app: Express) => {
         res.status(404).send();
       }
 
-      console.log(subscriber);
+      logger.info(subscriber);
 
       // Make request to email provider to verify email
       const verifyEmailResponse = await verifyEmail(
         subscriber?.dataValues.email
       );
-      console.log("Verify Email Response: ", verifyEmailResponse);
+      logger.info("Verify Email Response: ", verifyEmailResponse);
 
       // Subscribe email to the specified mailing list
       const subscribeEmailResponse = await subscribe(
         MAILING_LIST_ID as string,
         subscriber?.dataValues.email
       );
-      console.log("subscribeEmailResponse: ", subscribeEmailResponse);
+      logger.info("subscribeEmailResponse: ", subscribeEmailResponse);
 
       // Update local db
       await Subscriber.update(
@@ -110,12 +112,12 @@ export default (app: Express) => {
         mailingListID: MAILING_LIST_ID,
         active: true
       });
-      console.log("subscription: ", subscription);
+      logger.info("subscription: ", subscription);
 
       // Send response
       res.status(200).send("Done");
     } catch (e) {
-      console.error("Some other error: ", e);
+      logger.error("Some other error: ", e);
       res.status(500).send();
     }
   });
@@ -137,8 +139,8 @@ export default (app: Express) => {
       const subscriber = await Subscriber.findByPk(
         subscription?.dataValues.subscriberID
       );
-      console.log("Subscription: ", subscription);
-      console.log("Subscriber: ", subscriber);
+      logger.info("Subscription: ", subscription);
+      logger.info("Subscriber: ", subscriber);
 
       if (!subscription || !subscriber) {
         res.status(500).send();
@@ -150,7 +152,7 @@ export default (app: Express) => {
         subscription?.dataValues.mailingListID,
         subscriber?.dataValues.email
       );
-      console.log("unsubscribeResponse: ", unsubscribeResponse);
+      logger.info("unsubscribeResponse: ", unsubscribeResponse);
 
       // Remove row relating to subscription from db
       const removedSubscription = await Subscription.destroy({
@@ -158,7 +160,7 @@ export default (app: Express) => {
           subscriptionID
         }
       });
-      console.log("removedSubscription: ", removedSubscription);
+      logger.info("removedSubscription: ", removedSubscription);
 
       // Check if user has any other subscriptions
       const remainingSubscriptionCount = await Subscription.count({
@@ -166,29 +168,29 @@ export default (app: Express) => {
           subscriberID: subscription?.dataValues.subscriberID
         }
       });
-      console.log("remainingSubscriptionCount: ", remainingSubscriptionCount);
+      logger.info("remainingSubscriptionCount: ", remainingSubscriptionCount);
 
       // No remaining subscriptions after unsubbing - remove the subscriber completely
       if (remainingSubscriptionCount === 0) {
-        console.log("No more subs! Removing user completely...");
+        logger.info("No more subs! Removing user completely...");
 
         const deletedSubscriberResponse = await removeUser(
           subscriber?.dataValues.email
         );
-        console.log("deletedSubscriberResponse: ", deletedSubscriberResponse);
+        logger.info("deletedSubscriberResponse: ", deletedSubscriberResponse);
 
         const deletedSubscriber = await Subscriber.destroy({
           where: {
             subscriberID: subscriber?.dataValues.subscriberID
           }
         });
-        console.log("deletedSubscriber: ", deletedSubscriber);
+        logger.info("deletedSubscriber: ", deletedSubscriber);
       }
 
       // Send response
       res.status(200).send();
     } catch (e) {
-      console.error("Some other error: ", e);
+      logger.error("Some other error: ", e);
       res.status(500).send();
     }
   });
