@@ -24,7 +24,7 @@ const expressLogger = (req: Request, res: Response, next: NextFunction) => {
   res.on("finish", () => {
     // console.log(`Responded with status ${res.statusCode}`);
     httpLogger.info(
-      `🌐 ${req.method} ${req.url} from ${req.ip} | HTTP ${res.statusCode}`
+      `🌐 ${req.method} ${req.originalUrl} from ${req.ip} | HTTP ${res.statusCode}`
     );
   });
   next();
