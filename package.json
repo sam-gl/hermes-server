@@ -47,6 +47,7 @@
     "rollup-plugin-copy": "^3.4.0",
     "rollup-plugin-peer-deps-external": "^2.2.4",
     "rollup-plugin-sourcemaps": "^0.6.3",
+    "rollup-plugin-watch": "^1.0.2",
     "tslib": "^2.6.1",
     "typescript": "^5.1.6"
   }

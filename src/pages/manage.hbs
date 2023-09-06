@@ -3,17 +3,15 @@
       title="Are you sure you want to unsubscribe?"
       subtitle="Just click unsubscribe below and we won't send you any more emails."
   }}
-  {{> button class="click_me" text="click me" }}
+  <div class="card-buttons">
+    {{> button class="click_me" text="Unsubscribe" }}
+  </div>
   {{/card}}
-
+  {{> footer }}
   <script>
-    var button = document.querySelector("click_me");
-    
-    var submit = function(evt) {
-      console.log("submitting")
-    }
-
-    button.addEventListener('click', submit);
-    button.addEventListener('keydown', submit);
+    var btn = document.querySelector('.click_me');
+    btn.addEventListener('click', () => {
+      console.log('you just got clicked')
+    });
   </script>
 {{/layouts/main}}

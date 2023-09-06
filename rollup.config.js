@@ -5,6 +5,7 @@ import typescript from "@rollup/plugin-typescript";
 import external from "rollup-plugin-peer-deps-external";
 import sourcemaps from "rollup-plugin-sourcemaps";
 import copy from "rollup-plugin-copy";
+import watch from "rollup-plugin-watch";
 
 import pkg from "./package.json" assert { type: "json" };
 
@@ -16,6 +17,7 @@ export default {
     sourcemap: true
   },
   plugins: [
+    watch({ dir: "src/pages" }), // Rollup only watches for changes in the dependency chain from the input. Handlebars templates aren't imported in that way.
     commonjs(),
     json(),
     external(),

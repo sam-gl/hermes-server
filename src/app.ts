@@ -11,7 +11,7 @@ import logger from "./loggers/app.ts";
 
 import { initDatabase } from "./models/index.ts";
 
-import accountManagementPages from "./pages/pageRoutes.ts";
+import accountManagementPages from "./pageRoutes.ts";
 import subscribeEndpoints from "./endpoints/subscribe.ts";
 
 const app: Express = express();
@@ -23,7 +23,16 @@ const limiter: RateLimitRequestHandler = rateLimit({
   standardHeaders: true
 });
 
-app.use(helmet());
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        "script-src": "'unsafe-inline'" // ??
+      }
+    }
+  })
+);
+
 // app.use(limiter);
 app.use(express.json());
 app.use(expressLogger);
