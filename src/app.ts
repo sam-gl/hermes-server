@@ -5,6 +5,7 @@ import express, { Express, Request, Response } from "express";
 import rateLimit, { RateLimitRequestHandler } from "express-rate-limit";
 import { engine } from "express-handlebars";
 import helmet from "helmet";
+import cors from "cors";
 
 import expressLogger from "./loggers/http.ts";
 import logger from "./loggers/app.ts";
@@ -16,6 +17,7 @@ import subscribeEndpoints from "./endpoints/subscribe.ts";
 
 const app: Express = express();
 const port: number = parseInt(process.env.HTTP_PORT as string) || 3000;
+const allowedOrigins = process.env.ALLOWED_ORIGINS as string;
 
 const limiter: RateLimitRequestHandler = rateLimit({
   windowMs: 5 * 60 * 1000, // 5 minutes
@@ -28,6 +30,18 @@ app.use(
     contentSecurityPolicy: {
       directives: {
         "script-src": "'unsafe-inline'" // ??
+      }
+    }
+  })
+);
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.split(",").indexOf(origin) >= 0) {
+        callback(null, true);
+      } else {
+        callback(null, false);
       }
     }
   })

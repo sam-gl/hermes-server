@@ -10,8 +10,12 @@
   {{> footer }}
   <script>
     var btn = document.querySelector('.click_me');
-    btn.addEventListener('click', () => {
-      console.log('you just got clicked')
+    btn.addEventListener('click', async () => {
+      console.log("Deleting...")
+      var response = await fetch("/subscribe?subscriptionID={{subscriptionID}}", {
+        method: "DELETE"
+      });
+      console.log("Response: ", response.status);
     });
   </script>
 {{/layouts/main}}
