@@ -3,6 +3,12 @@
       title="Are you sure you want to unsubscribe?"
       subtitle="Just click unsubscribe below and we won't send you any more emails."
   }}
+  {{#if error}}
+    <div class="banner error">
+      <p>There was an error unsubscribing you, please try again using an unsubscribe link from one of our emails.</p>
+      <p>If you're still having problems, send us a message at <a href="mailto:{{errorContactEmail}}">{{errorContactEmail}}</a> and we'll sort it out ASAP.</p>
+    </div>
+  {{/if}}
   <div class="card-buttons">
     {{> button class="click_me" text="Unsubscribe" }}
   </div>
@@ -15,7 +21,14 @@
       var response = await fetch("/subscribe?subscriptionID={{subscriptionID}}", {
         method: "DELETE"
       });
+      
       console.log("Response: ", response.status);
+
+      if(response.status === 200) {
+        window.location.replace("/unsubscribed");
+      } else {
+        window.location.replace("/manage?error=true&subscriptionID={{subscriptionID}}");
+      }
     });
   </script>
 {{/layouts/main}}
